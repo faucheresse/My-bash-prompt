@@ -1,0 +1,62 @@
+        RED="\001\033[38;5;160m\002"
+     YELLOW="\001\033[38;5;208m\002"
+      GREEN="\001\033[38;5;40m\002"
+       BLUE="\001\033[38;5;32m\002"
+     PURPLE="\001\033[38;5;165m\002"
+ LIGHT_GRAY="\001\033[38;5;244m\002"
+ LIGHT_BLUE="\001\033[38;5;45m\002"
+ COLOR_TEXT="\001\033[38;5;250m\002"
+
+function git_color {
+  local git_status="$(git status 2> /dev/null)"
+
+  if [[ $git_status =~ "Your branch is ahead of" ]]; then
+    echo -e $YELLOW
+  elif [[ $git_status =~ "nothing to commit" ]]; then
+    echo -e $GREEN
+  else
+    echo -e $LIGHT_BLUE
+  fi
+}
+
+function git_branch {
+  local git_status="$(git status 2> /dev/null)"
+  local on_branch="On branch ([^${IFS}]*)"
+  local on_tag="HEAD detached at ([^${IFS}]*)"
+  local on_commit="Your branch is ([^${IFS}]*) "
+  local prompt=""
+
+  if [[ $git_status =~ $on_commit ]] || [[ $git_status =~ $on_tag ]]; then
+  	if [[ $git_status =~ "Your branch is ahead of" ]]; then
+  		prompt+=" ➖ "
+  	else
+  		prompt+=" ➕ "
+  	fi
+  fi
+  if [[ $git_status =~ $on_branch ]]; then
+    local branch=${BASH_REMATCH[1]}
+    prompt+="⚡ $branch"
+  elif [[ $git_status =~ $on_tag ]]; then
+    local tag=${BASH_REMATCH[1]}
+    prompt+="💥 $tag"
+  fi
+  echo -e ${prompt}
+}
+
+function prompt_func() {
+    previous_return_value=$?;
+    #The lowercase w is the full current working directory/Capital W is just the trailing part of the current working directory
+    prompt="${TITLEBAR}${BLUE}[${YELLOW}\t${LIGHT_GRAY} - ${RED}\w"
+    prompt+="\$(git_color)"
+    prompt+="\$(git_branch)"
+    prompt+="${BLUE}]${COLOR_TEXT}"
+    
+    if test $previous_return_value -eq 0
+    then
+        PS1="${prompt}${GREEN}\>${COLOR_TEXT}"
+    else
+        PS1="${prompt}${PURPLE}/>${COLOR_TEXT}"
+    fi
+}
+
+PROMPT_COMMAND=prompt_func
