@@ -11,3 +11,4 @@ if [ -f ~/.prompt ]; then
     . ~/.prompt
 fi
 ```
+Icons have been found on [this website](https://gitmoji.carloscuesta.me).
